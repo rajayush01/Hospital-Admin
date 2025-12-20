@@ -7,7 +7,7 @@ export default function SidebarLayout() {
     <div className="layout">
       {/* Sidebar */}
       <aside className="sidebar">
-        <h2 className="sidebar-title">Elite8 Hospital Management System</h2>
+        <h2 className="sidebar-title">Elite8 HealthFlow</h2>
 
         <nav className="nav">
 
