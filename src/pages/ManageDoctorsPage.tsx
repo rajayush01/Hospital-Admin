@@ -14,12 +14,10 @@ import {
   CircularProgress,
   Avatar,
   TextField,
-  InputAdornment,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import SearchIcon from "@mui/icons-material/Search";
-import PersonIcon from "@mui/icons-material/Person";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import { FaPerson } from "react-icons/fa6";
+import { FaHospitalAlt } from "react-icons/fa";
 
 const MotionPaper = motion(Paper);
 const MotionBox = motion(Box);
@@ -267,13 +265,6 @@ export default function ManageDoctorsPage() {
                 placeholder="Search doctors..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "text.secondary", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
@@ -380,9 +371,7 @@ export default function ManageDoctorsPage() {
                             Dr. {d.name}
                           </Typography>
                           <Box display="flex" alignItems="center" gap={0.5}>
-                            <LocalHospitalIcon
-                              sx={{ fontSize: 12, color: "text.secondary" }}
-                            />
+                            <FaHospitalAlt />
                             <Typography
                               variant="caption"
                               sx={{
@@ -478,7 +467,7 @@ export default function ManageDoctorsPage() {
                     boxShadow: "0 8px 24px rgba(47, 108, 255, 0.15)",
                   }}
                 >
-                  <PersonIcon sx={{ fontSize: 48, color: "#2f6cff" }} />
+<FaPerson />
                 </Box>
                 <Typography variant="h6" fontWeight={600} color="text.secondary" mb={1}>
                   No Doctor Selected

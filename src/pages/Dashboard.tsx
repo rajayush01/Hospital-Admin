@@ -15,12 +15,12 @@ import dayjs from "dayjs";
 import BookAppointmentModal from "../componenets/booking/BookAppointmentModal";
 
 // Icons
-import PeopleIcon from "@mui/icons-material/People";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import { FaPerson } from "react-icons/fa6";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 // Assets
 import logo1 from "../assets/images/logo-removebg-preview.png";
+import { MdEventAvailable } from "react-icons/md";
 
 // Motion wrapper
 const MotionCard = motion(Card);
@@ -142,7 +142,7 @@ export default function Dashboard() {
                 justifyContent: "center",
               }}
             >
-              <PeopleIcon sx={{ fontSize: 32 }} />
+              <FaPerson/>
             </Box>
 
             {/* Text */}
@@ -182,7 +182,7 @@ export default function Dashboard() {
                 justifyContent: "center",
               }}
             >
-              <EventAvailableIcon sx={{ fontSize: 32 }} />
+              <MdEventAvailable />
             </Box>
 
             {/* Text */}

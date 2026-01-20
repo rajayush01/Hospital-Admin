@@ -4,7 +4,11 @@ const PUBLIC_URL = import.meta.env.VITE_PUBLIC_API_URL;
 // Generic Request Wrapper
 async function request(url: string, options: RequestInit = {}) {
   if (!url) throw new Error("❌ API URL is undefined. Check .env");
-
+if (options.body instanceof FormData) {
+    if (options.headers) {
+      delete (options.headers as any)["Content-Type"];
+    }
+  }
   const res = await fetch(url, options);
 
   if (!res.ok) {
@@ -43,13 +47,20 @@ export const backendApi = {
     return request(`${ADMIN_URL}/doctors`);
   },
 
-  createDoctor(payload: any) {
+  createDoctor(payload: FormData) {
     return request(`${ADMIN_URL}/doctors`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: payload,
     });
   },
+
+  updateDoctor(id: string, payload: FormData) {
+  return request(`${ADMIN_URL}/doctors/${id}`, {
+    method: "PUT",
+    body: payload,
+  });
+},
+
 
 updateDoctorSchedule(id: string, schedule: any) {
   return request(`${ADMIN_URL}/doctors/${id}/schedule`, {
