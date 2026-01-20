@@ -13,16 +13,16 @@ import {
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
 import BookAppointmentModal from "../componenets/booking/BookAppointmentModal";
+import DoctorLeaveModal from "../componenets/doctors/DoctorLeaveModal";
 
 // Icons
 import { FaPerson } from "react-icons/fa6";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { MdEventAvailable } from "react-icons/md";
 
 // Assets
 import logo1 from "../assets/images/logo-removebg-preview.png";
-import { MdEventAvailable } from "react-icons/md";
 
-// Motion wrapper
 const MotionCard = motion(Card);
 
 export default function Dashboard() {
@@ -30,18 +30,30 @@ export default function Dashboard() {
   const [appointmentsToday, setAppointmentsToday] = useState(0);
   const [openBooking, setOpenBooking] = useState(false);
 
+  const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
+  const [openLeaveModal, setOpenLeaveModal] = useState(false);
+
   const today = dayjs().format("YYYY-MM-DD");
 
+  // ==============================
+  // LOAD DATA
+  // ==============================
   async function loadData() {
-    const docs = await backendApi.getDoctors();
-    setDoctors(docs);
+    try {
+      const docs = await backendApi.getDoctors();
+      setDoctors(Array.isArray(docs) ? docs : []);
 
-    const allAppointments = await backendApi.getAppointments();
-    const todays = allAppointments.filter((a: any) =>
-      dayjs(a.date).format("YYYY-MM-DD") === today
-    );
+      const allAppointments = await backendApi.getAppointments();
+      const list = Array.isArray(allAppointments) ? allAppointments : [];
 
-    setAppointmentsToday(todays.length);
+      const todays = list.filter(
+        (a: any) => dayjs(a.date).format("YYYY-MM-DD") === today
+      );
+
+      setAppointmentsToday(todays.length);
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+    }
   }
 
   useEffect(() => {
@@ -57,15 +69,14 @@ export default function Dashboard() {
         mx: "auto",
       }}
     >
-      {/* ================= HERO HEADER ================= */}
+      {/* ================= HERO ================= */}
       <MotionCard
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         sx={{
           borderRadius: 5,
-          background:
-            "linear-gradient(135deg, #f5f9ff 0%, #eaf2ff 100%)",
+          background: "linear-gradient(135deg,#f5f9ff,#eaf2ff)",
           boxShadow: "0 20px 50px rgba(47,108,255,0.12)",
           p: 4,
         }}
@@ -73,7 +84,7 @@ export default function Dashboard() {
         <Stack
           direction={{ xs: "column", md: "row" }}
           justifyContent="space-between"
-          alignItems={{ xs: "flex-start", md: "center" }}
+          alignItems="center"
           spacing={3}
         >
           <Stack direction="row" spacing={2} alignItems="center">
@@ -98,7 +109,6 @@ export default function Dashboard() {
               px: 4,
               py: 1.4,
               background: "linear-gradient(135deg,#2f6cff,#5a8cff)",
-              boxShadow: "0 16px 40px rgba(47,108,255,.35)",
             }}
           >
             Book Appointment
@@ -110,98 +120,35 @@ export default function Dashboard() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: {
-            xs: "repeat(1, 1fr)",
-            md: "repeat(2, 1fr)",
-          },
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
           gap: 4,
         }}
       >
         {/* TOTAL DOCTORS */}
-        <MotionCard
-          whileHover={{ y: -6 }}
-          transition={{ duration: 0.25 }}
-          sx={{
-            borderRadius: 5,
-            background: "linear-gradient(135deg,#2f6cff,#6aa5ff)",
-            color: "#fff",
-            p: 3,
-            boxShadow: "0 20px 45px rgba(47,108,255,.35)",
-          }}
-        >
+        <MotionCard sx={{ borderRadius: 5, p: 3, background: "#2f6cff", color: "#fff" }}>
           <Stack direction="row" spacing={3} alignItems="center">
-            {/* Icon */}
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                borderRadius: "18px",
-                background: "rgba(255,255,255,0.22)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FaPerson/>
-            </Box>
-
-            {/* Text */}
+            <FaPerson size={42} />
             <Box>
-              <Typography sx={{ opacity: 0.9, fontWeight: 500 }}>
-                Total Doctors
-              </Typography>
-              <Typography variant="h3" fontWeight={800} lineHeight={1.1}>
-                {doctors.length}
-              </Typography>
+              <Typography>Total Doctors</Typography>
+              <Typography variant="h3">{doctors.length}</Typography>
             </Box>
           </Stack>
         </MotionCard>
 
         {/* TODAY'S APPOINTMENTS */}
-        <MotionCard
-          whileHover={{ y: -6 }}
-          transition={{ duration: 0.25 }}
-          sx={{
-            borderRadius: 5,
-            background: "linear-gradient(135deg,#1565c0,#42a5f5)",
-            color: "#fff",
-            p: 3,
-            boxShadow: "0 20px 45px rgba(21,101,192,.35)",
-          }}
-        >
+        <MotionCard sx={{ borderRadius: 5, p: 3, background: "#1565c0", color: "#fff" }}>
           <Stack direction="row" spacing={3} alignItems="center">
-            {/* Icon */}
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                borderRadius: "18px",
-                background: "rgba(255,255,255,0.22)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <MdEventAvailable />
-            </Box>
-
-            {/* Text */}
+            <MdEventAvailable size={42} />
             <Box>
-              <Typography sx={{ opacity: 0.9, fontWeight: 500 }}>
-                Today's Appointments
-              </Typography>
-              <Typography variant="h3" fontWeight={800} lineHeight={1.1}>
-                {appointmentsToday}
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                {today}
-              </Typography>
+              <Typography>Today's Appointments</Typography>
+              <Typography variant="h3">{appointmentsToday}</Typography>
+              <Typography variant="caption">{today}</Typography>
             </Box>
           </Stack>
         </MotionCard>
       </Box>
 
-      {/* ================= DOCTOR SCHEDULES ================= */}
+      {/* ================= DOCTORS ================= */}
       <Box>
         <Typography variant="h5" fontWeight={800} mb={2}>
           Doctor Schedules
@@ -211,49 +158,22 @@ export default function Dashboard() {
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "repeat(1, 1fr)",
-              md: "repeat(2, 1fr)",
-              lg: "repeat(3, 1fr)",
+              xs: "1fr",
+              md: "repeat(2,1fr)",
+              lg: "repeat(3,1fr)",
             },
             gap: 4,
           }}
         >
           {doctors.map((doc: any) => (
-            <MotionCard
-              key={doc._id}
-              whileHover={{ y: -10 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              sx={{
-                height: "100%",
-                borderRadius: 5,
-                background:
-                  "linear-gradient(180deg,#ffffff,#f6f9ff)",
-                boxShadow: "0 16px 35px rgba(0,0,0,0.08)",
-                p: 2,
-              }}
-            >
+            <MotionCard key={doc._id} sx={{ borderRadius: 5, p: 2 }}>
               <CardContent>
                 <Stack spacing={2}>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar
-                      sx={{
-                        bgcolor: "#2f6cff",
-                        width: 54,
-                        height: 54,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {doc.name?.charAt(0)}
-                    </Avatar>
-
+                    <Avatar>{doc.name?.charAt(0)}</Avatar>
                     <Box>
-                      <Typography fontWeight={700}>
-                        Dr. {doc.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                      >
+                      <Typography fontWeight={700}>Dr. {doc.name}</Typography>
+                      <Typography variant="body2" color="text.secondary">
                         {doc.departmentId?.name || "No Department"}
                       </Typography>
                     </Box>
@@ -261,14 +181,38 @@ export default function Dashboard() {
 
                   <Divider />
 
-                  {Object.entries(doc.schedule).map(
+                  {/* ===== LEAVE STATUS ===== */}
+                  <Box>
+                    {doc.leaveDays?.length > 0 ? (
+                      <Typography color="error" fontWeight={600}>
+                        On Leave: {doc.leaveDays.join(", ")}
+                      </Typography>
+                    ) : (
+                      <Typography color="success.main" fontWeight={600}>
+                        Available All Days
+                      </Typography>
+                    )}
+
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      sx={{ mt: 1 }}
+                      onClick={() => {
+                        setSelectedDoctor(doc);
+                        setOpenLeaveModal(true);
+                      }}
+                    >
+                      Manage Leave
+                    </Button>
+                  </Box>
+
+                  <Divider />
+
+                  {/* ===== SCHEDULE ===== */}
+                  {Object.entries(doc.schedule || {}).map(
                     ([day, slots]: any) => (
                       <Box key={day}>
-                        <Typography
-                          fontWeight={700}
-                          color="#1565c0"
-                          sx={{ textTransform: "capitalize" }}
-                        >
+                        <Typography fontWeight={700} sx={{ textTransform: "capitalize" }}>
                           {day}
                         </Typography>
 
@@ -277,24 +221,9 @@ export default function Dashboard() {
                             No slots available
                           </Typography>
                         ) : (
-                          <Stack
-                            direction="row"
-                            spacing={1}
-                            flexWrap="wrap"
-                          >
+                          <Stack direction="row" spacing={1} flexWrap="wrap">
                             {slots.map((s: any, i: number) => (
-                              <Box
-                                key={i}
-                                sx={{
-                                  px: 1.6,
-                                  py: 0.6,
-                                  borderRadius: 999,
-                                  backgroundColor: "#e3f2fd",
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: "#0d47a1",
-                                }}
-                              >
+                              <Box key={i} sx={{ px: 1.5, py: 0.5, borderRadius: 999, bgcolor: "#e3f2fd" }}>
                                 {s.start} – {s.end}
                               </Box>
                             ))}
@@ -310,11 +239,18 @@ export default function Dashboard() {
         </Box>
       </Box>
 
-      {/* ================= MODAL ================= */}
+      {/* ================= MODALS ================= */}
       <BookAppointmentModal
         open={openBooking}
         onClose={() => setOpenBooking(false)}
         onBooked={loadData}
+      />
+
+      <DoctorLeaveModal
+        open={openLeaveModal}
+        onClose={() => setOpenLeaveModal(false)}
+        doctor={selectedDoctor}
+        onSaved={loadData}
       />
     </Stack>
   );

@@ -71,6 +71,15 @@ updateDoctorSchedule(id: string, schedule: any) {
 }
 ,
 
+updateDoctorLeave(id: string, leaveDays: string[]) {
+  return request(`${ADMIN_URL}/doctors/${id}/leave`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ leaveDays }),
+  });
+},
+
+
   // ================================
   // PATIENTS (ADMIN)
   // ================================
