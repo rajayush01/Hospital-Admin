@@ -61,6 +61,11 @@ export const backendApi = {
   });
 },
 
+getAllDoctorLeaves() {
+  return request(`${ADMIN_URL}/doctors/leaves`);
+},
+
+
 
 updateDoctorSchedule(id: string, schedule: any) {
   return request(`${ADMIN_URL}/doctors/${id}/schedule`, {
@@ -71,13 +76,21 @@ updateDoctorSchedule(id: string, schedule: any) {
 }
 ,
 
-updateDoctorLeave(id: string, leaveDays: string[]) {
+addDoctorLeave(
+  id: string,
+  payload: {
+    fromDate: string;
+    toDate: string;
+    reason?: string;
+  }
+) {
   return request(`${ADMIN_URL}/doctors/${id}/leave`, {
-    method: "PATCH",
+    method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ leaveDays }),
+    body: JSON.stringify(payload),
   });
 },
+
 
 
   // ================================
@@ -148,3 +161,5 @@ updateDoctorLeave(id: string, leaveDays: string[]) {
     });
   },
 };
+
+

@@ -5,21 +5,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
+  TextField,
 } from "@mui/material";
 import { backendApi } from "../../api/backendApi";
-
-const DAYS = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
 
 export default function DoctorLeaveModal({
   open,
@@ -27,29 +15,28 @@ export default function DoctorLeaveModal({
   doctor,
   onSaved,
 }: any) {
-  const [leaveDays, setLeaveDays] = useState<string[]>([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [reason, setReason] = useState("");
 
-  // 🔁 Sync state when doctor changes
+  // 🔁 Reset when modal opens/closes
   useEffect(() => {
-    if (doctor?.leaveDays) {
-      setLeaveDays(doctor.leaveDays);
-    } else {
-      setLeaveDays([]);
+    if (open) {
+      setFromDate("");
+      setToDate("");
+      setReason("");
     }
-  }, [doctor]);
-
-  const toggleDay = (day: string) => {
-    setLeaveDays((prev) =>
-      prev.includes(day)
-        ? prev.filter((d) => d !== day)
-        : [...prev, day]
-    );
-  };
+  }, [open]);
 
   const save = async () => {
-    if (!doctor?._id) return;
+    if (!doctor?._id || !fromDate || !toDate) return;
 
-    await backendApi.updateDoctorLeave(doctor._id, leaveDays);
+    await backendApi.addDoctorLeave(doctor._id, {
+      fromDate,
+      toDate,
+      reason,
+    });
+
     onSaved();
     onClose();
   };
@@ -57,24 +44,36 @@ export default function DoctorLeaveModal({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>
-        Manage Leave – Dr. {doctor?.name || ""}
+        Add Leave – Dr. {doctor?.name || ""}
       </DialogTitle>
 
-      <DialogContent>
-        <FormGroup>
-          {DAYS.map((day) => (
-            <FormControlLabel
-              key={day}
-              control={
-                <Checkbox
-                  checked={leaveDays.includes(day)}
-                  onChange={() => toggleDay(day)}
-                />
-              }
-              label={day.charAt(0).toUpperCase() + day.slice(1)}
-            />
-          ))}
-        </FormGroup>
+      <DialogContent sx={{ display: "flex", gap: 2, mt: 1 }}>
+        <TextField
+          type="date"
+          label="From Date"
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+        />
+
+        <TextField
+          type="date"
+          label="To Date"
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+        />
+
+        <TextField
+          label="Reason (optional)"
+          fullWidth
+          multiline
+          minRows={2}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
       </DialogContent>
 
       <DialogActions>
@@ -82,9 +81,9 @@ export default function DoctorLeaveModal({
         <Button
           variant="contained"
           onClick={save}
-          disabled={!doctor}
+          disabled={!fromDate || !toDate}
         >
-          Save
+          Save Leave
         </Button>
       </DialogActions>
     </Dialog>

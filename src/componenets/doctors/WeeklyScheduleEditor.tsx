@@ -18,13 +18,13 @@ import { backendApi } from "../../api/backendApi";
 import CustomSnackbar from "../CustomSnackbar";
 
 const days = [
-  { key: "monday", label: "Mon" },
-  { key: "tuesday", label: "Tue" },
-  { key: "wednesday", label: "Wed" },
-  { key: "thursday", label: "Thu" },
-  { key: "friday", label: "Fri" },
-  { key: "saturday", label: "Sat" },
-  { key: "sunday", label: "Sun" },
+  { key: "monday", label: "Mon", full: "Monday" },
+  { key: "tuesday", label: "Tue", full: "Tuesday" },
+  { key: "wednesday", label: "Wed", full: "Wednesday" },
+  { key: "thursday", label: "Thu", full: "Thursday" },
+  { key: "friday", label: "Fri", full: "Friday" },
+  { key: "saturday", label: "Sat", full: "Saturday" },
+  { key: "sunday", label: "Sun", full: "Sunday" },
 ];
 
 const defaultSchedule = {
@@ -52,9 +52,9 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
     severity: "success" as "success" | "error",
   });
 
-  // 🔁 Copy states
-  const [copyFromDay, setCopyFromDay] = useState<string>("monday");
-  const [copyToDays, setCopyToDays] = useState<string[]>([]);
+  // Duplicate schedule states
+  const [sourceDay, setSourceDay] = useState<string>("monday");
+  const [targetDays, setTargetDays] = useState<string[]>([]);
 
   useEffect(() => {
     setSchedule({
@@ -62,8 +62,8 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
       ...doctor.schedule,
     });
     setActiveDay("monday");
-    setCopyFromDay("monday");
-    setCopyToDays([]);
+    setSourceDay("monday");
+    setTargetDays([]);
   }, [doctor]);
 
   async function save() {
@@ -72,11 +72,11 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
       await backendApi.updateDoctorSchedule(doctor._id, schedule);
       setSnackbar({
         open: true,
-        message: "Schedule updated successfully!",
+        message: "Weekly schedule updated successfully",
         severity: "success",
       });
       onUpdated();
-    } catch (error) {
+    } catch {
       setSnackbar({
         open: true,
         message: "Failed to update schedule",
@@ -87,18 +87,19 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
     }
   }
 
-  function applyCopySchedule() {
-    const sourceSlots = schedule[copyFromDay] ?? [];
+  function applyDuplicateSchedule() {
+    const sourceSlots = schedule[sourceDay] ?? [];
+    const updated = { ...schedule };
 
-    const updatedSchedule = { ...schedule };
-
-    copyToDays.forEach((day) => {
-      updatedSchedule[day] = JSON.parse(JSON.stringify(sourceSlots));
+    targetDays.forEach((day) => {
+      updated[day] = JSON.parse(JSON.stringify(sourceSlots));
     });
 
-    setSchedule(updatedSchedule);
-    setCopyToDays([]);
+    setSchedule(updated);
+    setTargetDays([]);
   }
+
+  const activeDayLabel = days.find((d) => d.key === activeDay)?.full;
 
   return (
     <>
@@ -119,13 +120,11 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
                   height: 44,
                   borderRadius: "50%",
                   fontWeight: 700,
-                  cursor: "pointer",
                   background:
                     activeDay === d.key
                       ? "linear-gradient(135deg,#2f6cff,#5a8cff)"
                       : "#e0e7ff",
                   color: activeDay === d.key ? "#fff" : "#1e3a8a",
-                  transition: "all 0.2s ease",
                 }}
               />
             </motion.div>
@@ -137,15 +136,9 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
           key={activeDay}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
         >
-          <Typography
-            variant="h6"
-            fontWeight={700}
-            mb={1}
-            sx={{ textTransform: "capitalize" }}
-          >
-            {activeDay}
+          <Typography variant="h6" fontWeight={700} mb={1}>
+            Editing schedule for: {activeDayLabel}
           </Typography>
 
           <SlotEditor
@@ -156,67 +149,73 @@ export default function WeeklyScheduleEditor({ doctor, onUpdated }: any) {
           />
         </motion.div>
 
-        {/* COPY FROM / TO */}
+        {/* DUPLICATE SCHEDULE */}
         <Box
           p={2}
           border="1px solid #e5e7eb"
           borderRadius={3}
           bgcolor="#f8fafc"
         >
-          <Typography fontWeight={600} mb={2}>
-            Copy Schedule
+          <Typography fontWeight={700} mb={1}>
+            Duplicate Schedule
           </Typography>
 
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            {/* COPY FROM */}
-            <FormControl fullWidth size="small">
-              <InputLabel>Copy from</InputLabel>
-              <Select
-                value={copyFromDay}
-                label="Copy from"
-                onChange={(e) => setCopyFromDay(e.target.value)}
-              >
-                {days.map((d) => (
-                  <MenuItem key={d.key} value={d.key}>
-                    {d.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            Copy one day’s schedule and apply it to other days
+          </Typography>
 
-            {/* COPY TO */}
-            <Box display="flex" gap={1} flexWrap="wrap">
-              {days
-                .filter((d) => d.key !== copyFromDay)
-                .map((d) => {
-                  const selected = copyToDays.includes(d.key);
-                  return (
-                    <Chip
-                      key={d.key}
-                      label={d.label}
-                      clickable
-                      color={selected ? "primary" : "default"}
-                      onClick={() =>
-                        setCopyToDays((prev) =>
-                          selected
-                            ? prev.filter((x) => x !== d.key)
-                            : [...prev, d.key]
-                        )
-                      }
-                    />
-                  );
-                })}
-            </Box>
-          </Stack>
+          {/* SOURCE DAY */}
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel>Select source day</InputLabel>
+            <Select
+              value={sourceDay}
+              label="Select source day"
+              onChange={(e) => setSourceDay(e.target.value)}
+            >
+              {days.map((d) => (
+                <MenuItem key={d.key} value={d.key}>
+                  {d.full}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* TARGET DAYS */}
+          <Typography fontWeight={600} mb={1}>
+            Apply {days.find(d => d.key === sourceDay)?.full}'s schedule to:
+          </Typography>
+
+          <Box display="flex" gap={1} flexWrap="wrap">
+            {days
+              .filter((d) => d.key !== sourceDay)
+              .map((d) => {
+                const selected = targetDays.includes(d.key);
+                return (
+                  <Chip
+                    key={d.key}
+                    label={d.label}
+                    clickable
+                    color={selected ? "primary" : "default"}
+                    onClick={() =>
+                      setTargetDays((prev) =>
+                        selected
+                          ? prev.filter((x) => x !== d.key)
+                          : [...prev, d.key]
+                      )
+                    }
+                  />
+                );
+              })}
+          </Box>
 
           <Button
             variant="contained"
             size="small"
             sx={{ mt: 2 }}
-            disabled={copyToDays.length === 0}
-            onClick={applyCopySchedule}
+            disabled={targetDays.length === 0}
+            onClick={applyDuplicateSchedule}
           >
-            Apply Copy
+            Apply to selected days
           </Button>
         </Box>
 

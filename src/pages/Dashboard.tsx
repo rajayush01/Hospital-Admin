@@ -36,6 +36,26 @@ export default function Dashboard() {
   const today = dayjs().format("YYYY-MM-DD");
 
   // ==============================
+  // HELPERS
+  // ==============================
+  const getActiveLeaveToday = (doctor: any) => {
+    if (!doctor?.leaveHistory?.length) return null;
+
+    const today = dayjs().startOf("day");
+
+    return doctor.leaveHistory.find((leave: any) => {
+      const from = dayjs(leave.fromDate).startOf("day");
+      const to = dayjs(leave.toDate).endOf("day");
+
+      return (
+        today.isSame(from) ||
+        today.isSame(to) ||
+        (today.isAfter(from) && today.isBefore(to))
+      );
+    });
+  };
+
+  // ==============================
   // LOAD DATA
   // ==============================
   async function loadData() {
@@ -124,7 +144,6 @@ export default function Dashboard() {
           gap: 4,
         }}
       >
-        {/* TOTAL DOCTORS */}
         <MotionCard sx={{ borderRadius: 5, p: 3, background: "#2f6cff", color: "#fff" }}>
           <Stack direction="row" spacing={3} alignItems="center">
             <FaPerson size={42} />
@@ -135,7 +154,6 @@ export default function Dashboard() {
           </Stack>
         </MotionCard>
 
-        {/* TODAY'S APPOINTMENTS */}
         <MotionCard sx={{ borderRadius: 5, p: 3, background: "#1565c0", color: "#fff" }}>
           <Stack direction="row" spacing={3} alignItems="center">
             <MdEventAvailable size={42} />
@@ -165,77 +183,97 @@ export default function Dashboard() {
             gap: 4,
           }}
         >
-          {doctors.map((doc: any) => (
-            <MotionCard key={doc._id} sx={{ borderRadius: 5, p: 2 }}>
-              <CardContent>
-                <Stack spacing={2}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar>{doc.name?.charAt(0)}</Avatar>
-                    <Box>
-                      <Typography fontWeight={700}>Dr. {doc.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {doc.departmentId?.name || "No Department"}
-                      </Typography>
-                    </Box>
-                  </Stack>
+          {doctors.map((doc: any) => {
+            const activeLeave = getActiveLeaveToday(doc);
 
-                  <Divider />
-
-                  {/* ===== LEAVE STATUS ===== */}
-                  <Box>
-                    {doc.leaveDays?.length > 0 ? (
-                      <Typography color="error" fontWeight={600}>
-                        On Leave: {doc.leaveDays.join(", ")}
-                      </Typography>
-                    ) : (
-                      <Typography color="success.main" fontWeight={600}>
-                        Available All Days
-                      </Typography>
-                    )}
-
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      sx={{ mt: 1 }}
-                      onClick={() => {
-                        setSelectedDoctor(doc);
-                        setOpenLeaveModal(true);
-                      }}
-                    >
-                      Manage Leave
-                    </Button>
-                  </Box>
-
-                  <Divider />
-
-                  {/* ===== SCHEDULE ===== */}
-                  {Object.entries(doc.schedule || {}).map(
-                    ([day, slots]: any) => (
-                      <Box key={day}>
-                        <Typography fontWeight={700} sx={{ textTransform: "capitalize" }}>
-                          {day}
+            return (
+              <MotionCard key={doc._id} sx={{ borderRadius: 5, p: 2 }}>
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Avatar>{doc.name?.charAt(0)}</Avatar>
+                      <Box>
+                        <Typography fontWeight={700}>
+                          Dr. {doc.name}
                         </Typography>
-
-                        {slots.length === 0 ? (
-                          <Typography variant="caption">
-                            No slots available
-                          </Typography>
-                        ) : (
-                          <Stack direction="row" spacing={1} flexWrap="wrap">
-                            {slots.map((s: any, i: number) => (
-                              <Box key={i} sx={{ px: 1.5, py: 0.5, borderRadius: 999, bgcolor: "#e3f2fd" }}>
-                                {s.start} – {s.end}
-                              </Box>
-                            ))}
-                          </Stack>
-                        )}
+                        <Typography variant="body2" color="text.secondary">
+                          {doc.departmentId?.name || "No Department"}
+                        </Typography>
                       </Box>
-                    )
-                  )}
-                </Stack>
-              </CardContent>
-            </MotionCard>
-          ))}
+                    </Stack>
+
+                    <Divider />
+
+                    {/* ===== LEAVE STATUS (FIXED) ===== */}
+                    <Box>
+                      {activeLeave ? (
+                        <Typography color="error" fontWeight={600}>
+                          On Leave (
+                          {dayjs(activeLeave.fromDate).format("DD MMM")} –{" "}
+                          {dayjs(activeLeave.toDate).format("DD MMM")}
+                          )
+                        </Typography>
+                      ) : (
+                        <Typography color="success.main" fontWeight={600}>
+                          Available Today
+                        </Typography>
+                      )}
+
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        sx={{ mt: 1 }}
+                        onClick={() => {
+                          setSelectedDoctor(doc);
+                          setOpenLeaveModal(true);
+                        }}
+                      >
+                        Manage Leave
+                      </Button>
+                    </Box>
+
+                    <Divider />
+
+                    {/* ===== SCHEDULE ===== */}
+                    {Object.entries(doc.schedule || {}).map(
+                      ([day, slots]: any) => (
+                        <Box key={day}>
+                          <Typography
+                            fontWeight={700}
+                            sx={{ textTransform: "capitalize" }}
+                          >
+                            {day}
+                          </Typography>
+
+                          {slots.length === 0 ? (
+                            <Typography variant="caption">
+                              No slots available
+                            </Typography>
+                          ) : (
+                            <Stack direction="row" spacing={1} flexWrap="wrap">
+                              {slots.map((s: any, i: number) => (
+                                <Box
+                                  key={i}
+                                  sx={{
+                                    px: 1.5,
+                                    py: 0.5,
+                                    borderRadius: 999,
+                                    bgcolor: "#e3f2fd",
+                                  }}
+                                >
+                                  {s.start} – {s.end}
+                                </Box>
+                              ))}
+                            </Stack>
+                          )}
+                        </Box>
+                      )
+                    )}
+                  </Stack>
+                </CardContent>
+              </MotionCard>
+            );
+          })}
         </Box>
       </Box>
 

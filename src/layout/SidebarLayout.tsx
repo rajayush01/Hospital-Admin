@@ -1,5 +1,11 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { FaHome, FaCalendarAlt, FaUserMd, FaListAlt } from "react-icons/fa";
+import {
+  FaHome,
+  FaCalendarAlt,
+  FaUserMd,
+  FaListAlt,
+  FaPlaneDeparture, // ✅ icon for leaves
+} from "react-icons/fa";
 import "./sidebar.css";
 
 export default function SidebarLayout() {
@@ -10,12 +16,13 @@ export default function SidebarLayout() {
         <h2 className="sidebar-title">Elite8 HealthFlow</h2>
 
         <nav className="nav">
-
           {/* Dashboard */}
           <NavLink
             to="/"
             end
-            className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
           >
             <FaHome />
             <span>Dashboard</span>
@@ -24,7 +31,9 @@ export default function SidebarLayout() {
           {/* Appointments */}
           <NavLink
             to="/appointments"
-            className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
           >
             <FaCalendarAlt />
             <span>Appointments</span>
@@ -33,21 +42,35 @@ export default function SidebarLayout() {
           {/* Manage Doctors */}
           <NavLink
             to="/manage-doctors"
-            className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
           >
             <FaUserMd />
             <span>Doctors</span>
           </NavLink>
 
+          {/* Doctor Leaves ✅ */}
+          <NavLink
+            to="/doctor-leaves"
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
+          >
+            <FaPlaneDeparture />
+            <span>Doctor Leaves</span>
+          </NavLink>
+
           {/* Departments */}
           <NavLink
             to="/departments"
-            className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
           >
             <FaListAlt />
             <span>Departments</span>
           </NavLink>
-
         </nav>
       </aside>
 
