@@ -27,23 +27,29 @@ export default function ManageDoctorsPage() {
   const [selected, setSelected] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+const [departments, setDepartments] = useState<any[]>([]);
 
   async function loadDoctors() {
-    try {
-      setLoading(true);
-      const res = await backendApi.getDoctors();
-      setDoctors(res);
-
-      if (selected) {
-        const updated = res.find((d: any) => d._id === selected._id);
-        if (updated) setSelected(updated);
-      }
-    } catch (error) {
-      console.error("Failed to load doctors:", error);
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    const [doctorsRes, departmentsRes] = await Promise.all([
+      backendApi.getDoctors(),
+      backendApi.getDepartments(), // ✅ Load departments too
+    ]);
+    
+    setDoctors(doctorsRes);
+    setDepartments(departmentsRes); // ✅ Set departments
+    
+    if (selected) {
+      const updated = doctorsRes.find((d: any) => d._id === selected._id);
+      if (updated) setSelected(updated);
     }
+  } catch (error) {
+    console.error("Failed to load data:", error);
+  } finally {
+    setLoading(false);
   }
+}
 
   useEffect(() => {
     loadDoctors();
@@ -182,7 +188,7 @@ export default function ManageDoctorsPage() {
                   Add Doctor
                 </Typography>
               </Box>
-              <AddDoctorForm onCreated={loadDoctors} />
+              <AddDoctorForm departments={departments} onCreated={loadDoctors} />
             </MotionPaper>
           </Stack>
         </Box>

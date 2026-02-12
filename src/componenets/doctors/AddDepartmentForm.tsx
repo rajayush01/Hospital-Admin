@@ -23,13 +23,20 @@ export default function AddDepartmentForm({
       await backendApi.createDepartment(name);
       setName("");
       setSnackbar({ open: true, message: 'Department created successfully!', severity: 'success' });
-      onCreated();
+      onCreated(); // ✅ This is already here
     } catch (error) {
       setSnackbar({ open: true, message: 'Failed to create department', severity: 'error' });
     } finally {
       setLoading(false);
     }
   }
+
+  // ✅ Add Enter key support
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      create();
+    }
+  };
 
   return (
     <>
@@ -40,6 +47,7 @@ export default function AddDepartmentForm({
           placeholder="e.g. Cardiology"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onKeyPress={handleKeyPress} // ✅ Added
           fullWidth
           disabled={loading}
         />

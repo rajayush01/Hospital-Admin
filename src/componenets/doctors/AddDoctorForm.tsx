@@ -20,8 +20,10 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 
 export default function AddDoctorForm({
   onCreated,
+  departments: propDepartments, // ✅ Add this prop
 }: {
   onCreated: () => void;
+  departments?: any[]; // ✅ Add this
 }) {
   const [name, setName] = useState("");
   const [departmentId, setDepartmentId] = useState("");
@@ -29,18 +31,23 @@ export default function AddDoctorForm({
   const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
-const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
     message: '', 
     severity: 'success' as 'success' | 'error' 
   });
 
-const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    backendApi.getDepartments().then(setDepartments);
-  }, []);
+    // ✅ Use prop departments if available, otherwise fetch
+    if (propDepartments) {
+      setDepartments(propDepartments);
+    } else {
+      backendApi.getDepartments().then(setDepartments);
+    }
+  }, [propDepartments]); // ✅ Add dependency
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,7 +85,6 @@ const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFeeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow only numbers and decimals
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setConsultationFee(value);
     }
@@ -217,7 +223,6 @@ const fileInputRef = useRef<HTMLInputElement | null>(null);
           </Typography>
         </div>
 
-        {/* Doctor Name */}
         <Typography fontWeight={600}>Doctor Name *</Typography>
         <TextField
           placeholder="Dr. John Doe"
@@ -227,7 +232,6 @@ const fileInputRef = useRef<HTMLInputElement | null>(null);
           disabled={loading}
         />
 
-        {/* Department */}
         <Typography fontWeight={600}>Department *</Typography>
         <FormControl fullWidth>
           <Select
@@ -247,7 +251,6 @@ const fileInputRef = useRef<HTMLInputElement | null>(null);
           </Select>
         </FormControl>
 
-        {/* Consultation Fee */}
         <Typography fontWeight={600}>Consultation Fee *</Typography>
         <TextField
           placeholder="500"
